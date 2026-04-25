@@ -1,0 +1,144 @@
+"""json用于存、发送数据的文件"""
+import json
+
+#定义空列表装图书
+library = []
+data_file = "books.json"
+
+#检查文件是否能打开
+def check_book():
+    """在函数中可能修改全局变量，在前面加global"""
+    global library
+    try:
+        """with open(file,mode,encoding="utf-8")
+                接打开文件后执行的命令
+        """
+        with open(data_file,"r",encoding="utf-8") as f:
+            library = json.load(f)
+    except FileNotFoundError:
+        library = []
+    except json.JSONDecodeError:
+        print("文件损坏，已重置")
+        library = []
+        
+#将新写入的图书信息存入library
+def save_book():
+    with open(data_file,'w',encoding="utf-8") as f:
+        """joson.dump(要存的数据，存到的文件夹，防止乱码等其他参数)"""
+        json.dump(library,f,ensure_ascii=False,indent=4)
+        
+def add_book():
+    book_id = input("请输入图书编号").strip()
+    """"check repeat"""
+    for book in library:
+        if book["id"] == book_id:
+            print("该书已存在")
+            """什么都不返回终止函数"""
+            return
+    book_title = input("请输入书名：").strip()
+    book_author = input("请输入作者：").strip()
+    
+    """用循环输入书本数，为了可以修改，如果输错了也可以改，句子不会直接报废"""
+    while True:
+        try:
+            count = int(input("请输入数量:"))
+            if count < 0 :
+                print("数量不可以为负数，请重新输入")
+                continue
+            break
+        except ValueError:
+                print("输入格式错误，请输入整数！")
+                
+    """添加到library中"""
+    library.append(
+        {
+            "id":book_id,
+            "title":book_title,
+            "author":book_author,
+            "count":count,
+        }
+    )
+    
+    """存进data_file"""
+    save_book()
+    print("添加成功！")
+
+def see_book():
+    if not library:
+        print("暂无书籍")
+        return 
+    print("="*80)
+    print("{:<20}{:<20}{:<20}{:<20}".format("编号","书名","作者","数量"))
+    print("="*80)
+    for book in library:
+        print("{:<20}{:<20}{:<20}{:<20}".format(book["id"],book["title"],book["author"],book["count"]))
+    print("-"*80)
+
+def search_book():
+    search_object = input("请输入要查找书籍的编号：").strip()
+    for book in library:
+        if book["id"] == search_object:
+            print("编号为{:<20}的书名为：{:<20},作者为：{:<20},图书系统中还有：{:<20}本".format(book["id"],book["title"],book["author"],book["count"]))
+            return
+    print("未找到匹配书籍")
+    
+def revise_book():
+    revise_id = input("请输入你想修改的书籍编号：")
+    #空集合是set1 = set()
+    revise_object = {} 
+    for book in library:
+        if book["id"] == revise_id:
+            while True:
+                try:
+                    new_count = int(input("请输入修改后图书数量："))
+                    if new_count < 0:
+                        print("图书数量不能为负数，请重新输入：")
+                        continue
+                    break
+                except ValueError:
+                    print("输入格式错误，请重新输入：")
+            book["count"] = new_count
+            save_book()
+            return 
+    print("未找到该编号的图书")
+                
+                
+def delete_book():
+    delete_id = input("请输入你想删除的书籍编号：")
+    locate = 0
+    for book in library:
+        if book["id"] == delete_id:
+            del library[locate]
+            save_book()
+            return
+        locate = locate+1
+    print("未找到该编号的图书")
+    
+    
+def main_menu():
+    check_book()
+    while True:
+        print("===== 个人图书管理系统 =====")
+        print("1. 添加图书信息\n2. 查看所有图书\n3. 查询图书（ISBN)\n4. 修改图书数量\n5. 删除图书\n6. 退出系统")
+        choice = input("请输入你的选择:")
+        if choice == "1":
+            add_book()
+        elif choice == "2":
+            see_book()
+        elif choice == "3":
+            search_book()
+        elif choice == "4":
+            revise_book()
+        elif choice == "5":
+            delete_book()
+        elif choice == "6":
+            print("再见！")
+            break
+        else:
+            print("输入无效,请输入1-6的数字")
+
+main_menu()
+        
+
+    
+         
